@@ -396,7 +396,7 @@ class coap(object):
 
             elif message['code'] in d.COAP_RC_ALL:
                 # this is meant for a transmitter (response)
-
+                
                 # find transmitter
                 msgkey = (srcIp,srcPort,message['token'],message['messageId'])
 
@@ -423,7 +423,7 @@ class coap(object):
                             ','.join([str(k) for k in self.transmitters.keys()])
                         )
                     )
-
+                
             else:
                 raise NotImplementedError()
 
@@ -431,11 +431,11 @@ class coap(object):
 
             # log
             log.warning(err)
-
+            
             # determine type of response packet
             if   message['type']==d.TYPE_CON:
                 responseType = d.TYPE_ACK
-            elif message['type']==d.TYPE_NON:
+            elif message['type']==d.TYPE_NON: 
                 responseType = d.TYPE_NON
             else:
                 raise SystemError('unexpected type {0}'.format(message['type']))
