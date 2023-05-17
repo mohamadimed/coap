@@ -100,13 +100,16 @@ class coap(object):
         log.debug('response: {0}'.format(response))
         return response['payload']
 
-    def DELETE(self,uri,confirmable=True,options=[]):
-        self._transmit(
+    def DELETE(self,uri,confirmable=True,options=[],payload=None): #PAYOLOAD BY MM TO ALLOW PAYLOAD IN DELETE
+        response = self._transmit(
             uri         = uri,
             confirmable = confirmable,
             code        = d.METHOD_DELETE,
             options     = options,
+            payload     = payload #LINE ADD BY MM TO ALLOW PAYLOAD IN DELETE
         )
+        log.debug('response: {0}'.format(response))
+        return response['payload']
 
     #===== server
 
@@ -126,9 +129,9 @@ class coap(object):
     #===== transmit
 
     def _transmit(self,uri,confirmable,code,options=[],payload=[]):
-        assert code in d.METHOD_ALL
-        if code in [d.METHOD_GET,d.METHOD_DELETE]:
-            assert payload==[]
+        assert code in d.METHOD_ALL #COMMENTED BY MM TO ALLOW PAYLOAD IN DELETE
+        #if code in [d.METHOD_GET,d.METHOD_DELETE]:
+         #   assert payload==[]
         assert type(uri)==str
 
         (host,destPort,uriOptions) = coapUri.uri2options(uri)
@@ -243,15 +246,17 @@ class coap(object):
         try:
             message = m.parseMessage(rawbytes)
             options = message['options']
+            
         except e.messageFormatError as err:
             log.warning('malformed message {0}: {1}'.format(u.formatBuf(rawbytes),str(err)))
+            
             return
-
+        
         # dispatch message
         try:
             if   message['code'] in d.METHOD_ALL:
                 # this is meant for a resource (request)
-
+                
                 #==== decrypt message if encrypted
                 innerOptions = []
                 foundContext = None
@@ -289,6 +294,7 @@ class coap(object):
                     payload = plaintext
                 else: # message not encrypted
                     payload = message['payload']
+                    
                     print("payload = {}".format(payload))
                 options += innerOptions
 
@@ -396,10 +402,10 @@ class coap(object):
 
             elif message['code'] in d.COAP_RC_ALL:
                 # this is meant for a transmitter (response)
-                
+                   
                 # find transmitter
                 msgkey = (srcIp,srcPort,message['token'],message['messageId'])
-
+                
                 found  = False
                 with self.transmittersLock:
                     self._cleanupTransmitter()
@@ -414,6 +420,7 @@ class coap(object):
                                 )
                             ):
                             found = True
+                            
                             v.receiveMessage(timestamp,srcIp,srcPort,message)
                             break
                 if found==False:

@@ -213,6 +213,7 @@ class coapTransmitter(threading.Thread):
         # turn message into exception if needed
         if message['code'] not in d.METHOD_ALL+d.COAP_RC_ALL_SUCCESS:
             message = e.coapRcFactory(message['code'])
+            
 
         # store packet
         with self.dataLock:
@@ -351,25 +352,29 @@ class coapTransmitter(threading.Thread):
 
         startTime   = time.time()
         ackMaxWait  = self.ackTimeout*random.uniform(1, d.DFLT_ACK_RANDOM_FACTOR)
+        
         while True:
             waitTimeLeft = startTime+ackMaxWait-time.time()
             if self.rxMsgEvent.wait(timeout=waitTimeLeft):
                 # I got message
                 with self.dataLock:
                     (timestamp,srcIp,srcPort,message) = self.LastRxPacket
+                    
                 if isinstance(message,e.coapRc):
                     with self.dataLock:
+                        
                         self.coapError = message
                     return
                 elif (
                         message['type']==d.TYPE_ACK and
                         message['messageId']==self.messageId
+                        
                     ):
-
+                    
                     # store ACK
                     with self.dataLock:
                         self.receivedACK = (timestamp,srcIp,srcPort,message)
-
+                        
                     # update FSM state
                     self._setState(self.STATE_ACKRX)
 
@@ -421,6 +426,7 @@ class coapTransmitter(threading.Thread):
         # log
         log.debug('_action_WAITFORRESP()')
         startTime   = time.time()
+        
         while True:
             waitTimeLeft = startTime+self.respTimeout-time.time()
             if self.rxMsgEvent.wait(timeout=waitTimeLeft):

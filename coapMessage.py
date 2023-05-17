@@ -71,6 +71,7 @@ def buildMessage(msgtype,token,code,messageId,options=[],payload=[],securityCont
 
     # add payload
     message += encodePayload(newPayload)
+
     
     return message
 
@@ -114,7 +115,7 @@ def parseMessage(message):
         returnVal.update(oscoapDict)
     else:
         returnVal['payload'] = payload
-
+        #print 'PAYLOAD: ',payload
     
     log.debug('parsed message: {0}'.format(returnVal))
     
